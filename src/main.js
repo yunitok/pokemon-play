@@ -165,6 +165,13 @@ const config = {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.NO_CENTER
     },
+    render: {
+        antialias: true,
+        pixelArt: false,
+        roundPixels: false,
+    },
+    // High DPI Support
+    resolution: window.devicePixelRatio,
     scene: [BootScene, MenuScene, SnorlaxScene, ShopScene, SilhouetteScannerScene, DiglettCounterScene, MeowthChangeScene, ChanseyMarketScene]
 };
 

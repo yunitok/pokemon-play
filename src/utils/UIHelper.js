@@ -2,21 +2,81 @@ import { fadeOutAndSwitch } from './transition';
 
 export class UIHelper {
     /**
+     * Generates persistent high-quality Canvas textures.
+     * Canvas 2D API provides superior anti-aliasing compared to WebGL Graphics for simple shapes.
+     * @param {Phaser.Scene} scene 
+     */
+    static generateTextures(scene) {
+        if (scene.textures.exists('ui_button_ring')) return;
+
+        const size = 256;
+        const center = size / 2;
+        const radius = 110; // Leave padding for glow/stroke
+        const lineWidth = 16;
+
+        // 1. Texture: Ring (Border)
+        const ringTex = scene.textures.createCanvas('ui_button_ring', size, size);
+        const ringCtx = ringTex.getContext();
+        
+        ringCtx.clearRect(0, 0, size, size);
+        ringCtx.beginPath();
+        ringCtx.arc(center, center, radius, 0, Math.PI * 2);
+        ringCtx.lineWidth = lineWidth;
+        ringCtx.strokeStyle = '#ffffff';
+        ringCtx.stroke();
+        
+        ringTex.refresh();
+
+        // 2. Texture: Fill (Body)
+        const fillTex = scene.textures.createCanvas('ui_button_fill', size, size);
+        const fillCtx = fillTex.getContext();
+
+        fillCtx.clearRect(0, 0, size, size);
+        fillCtx.beginPath();
+        fillCtx.arc(center, center, radius, 0, Math.PI * 2);
+        fillCtx.fillStyle = '#ffffff';
+        fillCtx.fill();
+
+        fillTex.refresh();
+    }
+
+    /**
      * Creates a standardized circular back button.
      * @param {Phaser.Scene} scene 
      * @param {Function} [callback] - Optional callback. Defaults to fadeOutAndSwitch to 'MenuScene'.
      */
     static createBackButton(scene, callback) {
+        UIHelper.generateTextures(scene);
         const x = 60;
         const y = 50;
         
         const container = scene.add.container(x, y).setScrollFactor(0).setDepth(100);
-        const bg = scene.add.circle(0, 0, 30, 0xffffff, 0.2).setStrokeStyle(2, 0xffffff);
-        const arrow = scene.add.text(0, 0, '⬅', { fontSize: '40px', color: '#fff' }).setOrigin(0.5);
         
-        container.add([bg, arrow]);
+        // Target Size: 60px. Texture Size: 256px.
+        // Scale: 60 / 256 ≈ 0.235
+        const scale = 60 / 256;
+
+        // 1. Background Fill (Transparent White)
+        const bgFill = scene.add.image(0, 0, 'ui_button_fill')
+            .setScale(scale)
+            .setAlpha(0.2)
+            .setTint(0xffffff);
+
+        // 2. Border Ring (Solid White)
+        const bgRing = scene.add.image(0, 0, 'ui_button_ring')
+            .setScale(scale)
+            .setTint(0xffffff);
+
+        const arrow = scene.add.text(0, -2, '⬅', { 
+            fontSize: '34px', 
+            color: '#fff',
+            fontFamily: 'Arial' // Ensure consistent rendering
+        }).setOrigin(0.5);
         
-        bg.setInteractive({ useHandCursor: true })
+        container.add([bgFill, bgRing, arrow]);
+        
+        // Interaction
+        bgFill.setInteractive({ useHandCursor: true })
             .on('pointerdown', () => {
                 if (window.playUiSound) window.playUiSound();
                 if (callback) {
@@ -25,8 +85,14 @@ export class UIHelper {
                     fadeOutAndSwitch(scene, 'MenuScene');
                 }
             })
-            .on('pointerover', () => bg.setFillStyle(0xffffff, 0.4))
-            .on('pointerout', () => bg.setFillStyle(0xffffff, 0.2));
+            .on('pointerover', () => {
+                bgFill.setAlpha(0.4);
+                container.setScale(1.05); // Subtle pop effect
+            })
+            .on('pointerout', () => {
+                bgFill.setAlpha(0.2);
+                container.setScale(1);
+            });
             
         return container;
     }
@@ -37,22 +103,46 @@ export class UIHelper {
      * @param {Function} callback - Function to trigger on click (e.g., showHelp).
      */
     static createHelpButton(scene, callback) {
+        UIHelper.generateTextures(scene);
         const x = scene.scale.width - 60;
         const y = 50;
 
         const container = scene.add.container(x, y).setScrollFactor(0).setDepth(100);
-        const bg = scene.add.circle(0, 0, 30, 0x2196F3, 0.8).setStrokeStyle(2, 0xffffff);
-        const symbol = scene.add.text(0, 0, '?', { fontSize: '32px', fontStyle: 'bold', color: '#fff' }).setOrigin(0.5);
+        const scale = 60 / 256;
 
-        container.add([bg, symbol]);
+        // 1. Background Fill (Blue)
+        const bgFill = scene.add.image(0, 0, 'ui_button_fill')
+            .setScale(scale)
+            .setAlpha(0.8)
+            .setTint(0x2196F3); 
 
-        bg.setInteractive({ useHandCursor: true })
+        // 2. Border Ring (White)
+        const bgRing = scene.add.image(0, 0, 'ui_button_ring')
+            .setScale(scale)
+            .setTint(0xffffff);
+
+        const symbol = scene.add.text(0, 0, '?', { 
+            fontSize: '32px', 
+            fontStyle: 'bold', 
+            color: '#fff',
+            fontFamily: 'Arial'
+        }).setOrigin(0.5);
+
+        container.add([bgFill, bgRing, symbol]);
+
+        bgFill.setInteractive({ useHandCursor: true })
             .on('pointerdown', () => {
                 if (window.playUiSound) window.playUiSound();
                 if (callback) callback();
             })
-            .on('pointerover', () => bg.setFillStyle(0x42A5F5, 1))
-            .on('pointerout', () => bg.setFillStyle(0x2196F3, 0.8));
+            .on('pointerover', () => {
+                bgFill.setTint(0x42A5F5).setAlpha(1);
+                container.setScale(1.05);
+            })
+            .on('pointerout', () => {
+                bgFill.setTint(0x2196F3).setAlpha(0.8);
+                container.setScale(1);
+            });
 
         return container;
     }

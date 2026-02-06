@@ -26,7 +26,7 @@ export class DiglettCounterScene extends MinigameScene {
         this.currentSum = 0;
         
         // UI
-        this.add.text(this.cameras.main.width/2, 50, 'Juego B: Suma con Digletts', { fontSize: '32px', fill: '#ffffff', stroke: '#000', strokeThickness: 4 }).setOrigin(0.5);
+        UIHelper.createTitle(this, 'Contador de Digletts');
         
         this.targetText = this.add.text(200, 150, `Objetivo: ${this.targetNumber}`, { fontSize: '48px', fill: '#ffff00', backgroundColor: '#333', padding: { x: 20, y: 10 } }).setOrigin(0.5);
         this.sumText = this.add.text(this.cameras.main.width - 200, 150, `Suma: 0`, { fontSize: '48px', fill: '#ffffff', backgroundColor: '#333', padding: { x: 20, y: 10 } }).setOrigin(0.5);

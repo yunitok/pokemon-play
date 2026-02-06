@@ -9,26 +9,26 @@ export class BootScene extends Phaser.Scene {
         // Load Real Assets
         this.load.path = 'assets/';
 
-        this.load.image('snorlax', 'images/snorlax.png');
-        this.load.image('snorlax_2', 'images/snorlax_2.png');
-        this.load.image('snorlax_3', 'images/snorlax_3.png');
-        this.load.image('snorlax_4', 'images/snorlax_4.png');
+        this.load.image('snorlax', 'images/snorlax.webp');
+        this.load.image('snorlax_2', 'images/snorlax_2.webp');
+        this.load.image('snorlax_3', 'images/snorlax_3.webp');
+        this.load.image('snorlax_4', 'images/snorlax_4.webp');
 
         this.load.image('candy', 'images/candy.png');
         this.load.image('berry', 'images/berry.png');
         this.load.image('apple', 'images/apple.png');
         this.load.image('donut', 'images/donut.png');
 
-        this.load.image('bg_menu', 'images/bg_menu.png');
-        this.load.image('bg_game', 'images/bg_game.png');
+        this.load.image('bg_menu', 'images/bg_menu.webp');
+        this.load.image('bg_game', 'images/bg_game.webp');
         
         // New Dynamic Backgrounds
-        this.load.image('bg_shop', 'images/bg_shop.png');
-        this.load.image('bg_scanner', 'images/bg_scanner.png');
-        this.load.image('bg_cave', 'images/bg_cave.png');
-        this.load.image('bg_gold', 'images/bg_gold.png');
-        this.load.image('bg_market', 'images/bg_market.png');
-        this.load.image('bg_mystery', 'images/bg_mystery.png');
+        this.load.image('bg_shop', 'images/bg_shop.webp');
+        this.load.image('bg_scanner', 'images/bg_scanner.webp');
+        this.load.image('bg_cave', 'images/bg_cave.webp');
+        this.load.image('bg_gold', 'images/bg_gold.webp');
+        this.load.image('bg_market', 'images/bg_market.webp');
+        this.load.image('bg_mystery', 'images/bg_mystery.webp');
         
         // Shop Items
         this.load.image('potion', 'images/potion.png');
