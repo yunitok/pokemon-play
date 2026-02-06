@@ -22,6 +22,14 @@ export class BootScene extends Phaser.Scene {
         this.load.image('bg_menu', 'images/bg_menu.png');
         this.load.image('bg_game', 'images/bg_game.png');
         
+        // New Dynamic Backgrounds
+        this.load.image('bg_shop', 'images/bg_shop.png');
+        this.load.image('bg_scanner', 'images/bg_scanner.png');
+        this.load.image('bg_cave', 'images/bg_cave.png');
+        this.load.image('bg_gold', 'images/bg_gold.png');
+        this.load.image('bg_market', 'images/bg_market.png');
+        this.load.image('bg_mystery', 'images/bg_mystery.png');
+        
         // Shop Items
         this.load.image('potion', 'images/potion.png');
         this.load.image('pokeball', 'images/pokeball.png');

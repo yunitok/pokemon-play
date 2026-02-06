@@ -1,4 +1,4 @@
-import Phaser from 'phaser';
+import { fadeOutAndSwitch } from '../utils/transition';
 
 export class MenuScene extends Phaser.Scene {
     constructor() {
@@ -6,19 +6,23 @@ export class MenuScene extends Phaser.Scene {
     }
 
     create() {
+        this.cameras.main.fadeIn(500, 0, 0, 0);
+
         const { width, height } = this.scale;
 
         // Background
+        if (window.setAppBackground) window.setAppBackground('#000000');
         this.add.image(width / 2, height / 2, 'bg_menu').setDisplaySize(width, height);
 
         // Title
         const titleText = this.add.text(width / 2, 80, 'PokemonPlay', {
-            fontFamily: 'sans-serif',
+            fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif',
             fontSize: '64px',
             color: '#FFCB05',
             stroke: '#3B4CCA',
             strokeThickness: 8,
-            shadow: { offsetX: 2, offsetY: 2, color: '#000', blur: 5, stroke: true, fill: true }
+            shadow: { offsetX: 2, offsetY: 2, color: '#000', blur: 5, stroke: true, fill: true },
+            fontStyle: 'bold'
         }).setOrigin(0.5);
 
         // Tween Title
@@ -33,12 +37,33 @@ export class MenuScene extends Phaser.Scene {
 
         // Button 1: Tienda
         this.createButton(width / 2, 250, 'Tienda Pokémon', 0xBA68C8, () => {
-            this.scene.start('ShopScene');
+            fadeOutAndSwitch(this, 'ShopScene');
         });
 
         // Button 2: Snorlax Game
-        this.createButton(width / 2, 380, 'El Misterio de Snorlax', 0x1565C0, () => {
-            this.scene.start('SnorlaxScene');
+        this.createButton(width / 2, 350, 'El Misterio de Snorlax', 0x1565C0, () => {
+            fadeOutAndSwitch(this, 'SnorlaxScene');
+        });
+
+        // Expansion Pack Games
+        const startY = 480;
+        const gapY = 100;
+        const gapX = 320;
+
+        // Row 1
+        this.createButton(width / 2 - 170, startY, 'A: Tesoro Gimmighoul', 0x29B6F6, () => {
+            fadeOutAndSwitch(this, 'SilhouetteScannerScene');
+        });
+        this.createButton(width / 2 + 170, startY, 'B: Digletts', 0x2E7D32, () => {
+            fadeOutAndSwitch(this, 'DiglettCounterScene');
+        });
+
+        // Row 2
+        this.createButton(width / 2 - 170, startY + gapY, 'C: Cofres Meowth', 0xF9A825, () => {
+            fadeOutAndSwitch(this, 'MeowthChangeScene');
+        });
+        this.createButton(width / 2 + 170, startY + gapY, 'D: Poké-Mart', 0xE65100, () => {
+            fadeOutAndSwitch(this, 'ChanseyMarketScene');
         });
     }
 
@@ -67,7 +92,7 @@ export class MenuScene extends Phaser.Scene {
         btnContainer.add([graphics, label, bg]);
 
         bg.on('pointerdown', () => {
-             if (window.playTone) window.playTone(400, 'square', 0.1);
+             if (window.playUiSound) window.playUiSound();
             this.tweens.add({
                 targets: btnContainer,
                 scaleX: 0.9, scaleY: 0.9, duration: 100, yoyo: true,
