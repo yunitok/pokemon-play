@@ -6,6 +6,10 @@ export class SilhouetteScannerScene extends MinigameScene {
         super('SilhouetteScannerScene');
     }
 
+    preload() {
+        this.load.image('bg_scanner', 'assets/images/bg_scanner.webp');
+    }
+
     create() {
         super.create();
         if (window.setAppBackground) window.setAppBackground('#000000');

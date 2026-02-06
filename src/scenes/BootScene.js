@@ -9,30 +9,19 @@ export class BootScene extends Phaser.Scene {
         // Load Real Assets
         this.load.path = 'assets/';
 
-        this.load.image('snorlax', 'images/snorlax.webp');
-        this.load.image('snorlax_2', 'images/snorlax_2.webp');
-        this.load.image('snorlax_3', 'images/snorlax_3.webp');
-        this.load.image('snorlax_4', 'images/snorlax_4.webp');
 
-        this.load.image('candy', 'images/candy.png');
-        this.load.image('berry', 'images/berry.png');
-        this.load.image('apple', 'images/apple.png');
-        this.load.image('donut', 'images/donut.png');
+
+
 
         this.load.image('bg_menu', 'images/bg_menu.webp');
+        // Shared Game Background (Default for Minigames)
         this.load.image('bg_game', 'images/bg_game.webp');
         
-        // New Dynamic Backgrounds
-        this.load.image('bg_shop', 'images/bg_shop.webp');
-        this.load.image('bg_scanner', 'images/bg_scanner.webp');
-        this.load.image('bg_cave', 'images/bg_cave.webp');
-        this.load.image('bg_gold', 'images/bg_gold.webp');
-        this.load.image('bg_market', 'images/bg_market.webp');
-        this.load.image('bg_mystery', 'images/bg_mystery.webp');
-        
-        // Shop Items
+        // Shop Items (Shared across scenes)
         this.load.image('potion', 'images/potion.png');
         this.load.image('pokeball', 'images/pokeball.png');
+        // 'coin' is procedural or handled elsewhere? Verify usage. 
+        // BootScene lines 36 had coin.png. Let's keep common items used in HUDs.
         this.load.image('coin', 'images/coin.png');
 
         // Loading UI

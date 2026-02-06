@@ -7,6 +7,14 @@ export class SnorlaxScene extends Phaser.Scene {
         super('SnorlaxScene');
     }
 
+    preload() {
+        this.load.image('bg_mystery', 'assets/images/bg_mystery.webp');
+        this.load.image('snorlax', 'assets/images/snorlax.webp');
+        this.load.image('snorlax_2', 'assets/images/snorlax_2.webp');
+        this.load.image('snorlax_3', 'assets/images/snorlax_3.webp');
+        this.load.image('snorlax_4', 'assets/images/snorlax_4.webp');
+    }
+
     create() {
         // UI Helpers
         const W = this.scale.width;

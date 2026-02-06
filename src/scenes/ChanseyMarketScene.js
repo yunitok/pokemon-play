@@ -6,6 +6,10 @@ export class ChanseyMarketScene extends MinigameScene {
         super('ChanseyMarketScene');
     }
 
+    preload() {
+        this.load.image('bg_market', 'assets/images/bg_market.webp');
+    }
+
     create() {
         super.create();
         if (window.setAppBackground) window.setAppBackground('#000000');

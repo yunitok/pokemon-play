@@ -6,6 +6,10 @@ export class DiglettCounterScene extends MinigameScene {
         super('DiglettCounterScene');
     }
 
+    preload() {
+        this.load.image('bg_cave', 'assets/images/bg_cave.webp');
+    }
+
     create() {
         super.create();
         if (window.setAppBackground) window.setAppBackground('#000000');

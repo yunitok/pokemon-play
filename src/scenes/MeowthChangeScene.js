@@ -6,6 +6,10 @@ export class MeowthChangeScene extends MinigameScene {
         super('MeowthChangeScene');
     }
 
+    preload() {
+        this.load.image('bg_gold', 'assets/images/bg_gold.webp');
+    }
+
     create() {
         super.create();
         if (window.setAppBackground) window.setAppBackground('#000000');

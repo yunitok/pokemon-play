@@ -6,6 +6,10 @@ export class ShopScene extends Phaser.Scene {
         super('ShopScene');
     }
 
+    preload() {
+        this.load.image('bg_shop', 'assets/images/bg_shop.webp');
+    }
+
     create() {
         this.cameras.main.fadeIn(500, 0, 0, 0);
 
