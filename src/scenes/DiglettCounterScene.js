@@ -1,5 +1,8 @@
 import { MinigameScene } from './MinigameScene';
 import { UIHelper } from '../utils/UIHelper';
+import { Difficulty } from '../utils/Difficulty';
+import { audioManager } from '../managers/AudioManager';
+import { gameManager } from '../managers/GameManager';
 
 export class DiglettCounterScene extends MinigameScene {
     constructor() {
@@ -23,31 +26,36 @@ export class DiglettCounterScene extends MinigameScene {
         // Dark Overlay
         this.add.rectangle(0, 0, this.scale.width, this.scale.height, 0x000000, 0.7).setOrigin(0, 0);
 
-        this.addHelp("¡Vamos a sumar!\n\nToca los Digletts para sumar sus números hasta llegar al OBJETIVO exacto.\n\nEJEMPLO:\nObjetivo: 10\nSi tocas un 5 y un 3, llevas 8.\n¡Te falta un 2! (5 + 3 + 2 = 10)");
-        
-        // Target Logic
-        this.targetNumber = Phaser.Math.Between(10, 25);
+        // Target Logic from Difficulty Utility
+        const range = Difficulty.getDiglettTarget(gameManager.level);
+        this.targetNumber = Phaser.Math.Between(range.min, range.max);
         this.currentSum = 0;
         
-        // UI
-        UIHelper.createTitle(this, 'Contador de Digletts');
-        
-        this.targetText = this.add.text(200, 150, `Objetivo: ${this.targetNumber}`, { fontSize: '48px', fill: '#ffff00', backgroundColor: '#333', padding: { x: 20, y: 10 } }).setOrigin(0.5);
-        this.sumText = this.add.text(this.cameras.main.width - 200, 150, `Suma: 0`, { fontSize: '48px', fill: '#ffffff', backgroundColor: '#333', padding: { x: 20, y: 10 } }).setOrigin(0.5);
+        // Header
+        UIHelper.createHeader(this, {
+            title: 'Contador de Digletts',
+            helpText: "¡Vamos a sumar!\n\nToca los Digletts para sumar sus números hasta llegar al OBJETIVO exacto.\n\nEJEMPLO:\nObjetivo: 10\nSi tocas un 5 y un 3, llevas 8.\n¡Te falta un 2! (5 + 3 + 2 = 10)."
+        });
+
+        this.targetText = this.add.text(200, 150, `Objetivo: ${this.targetNumber}`, { fontSize: '48px', fontFamily: '"Fredoka One", cursive', fill: '#ffff00', backgroundColor: '#333', padding: { x: 20, y: 10 } }).setOrigin(0.5);
+        this.sumText = this.add.text(this.cameras.main.width - 200, 150, `Suma: 0`, { fontSize: '48px', fontFamily: '"Fredoka One", cursive', fill: '#ffffff', backgroundColor: '#333', padding: { x: 20, y: 10 } }).setOrigin(0.5);
 
         // Diglett Group
         this.digletts = this.add.group();
         
-        // Timer for spawning
+        // Timer for spawning from Difficulty
+        const spawnDelay = Difficulty.getDiglettNewSpawnInterval(gameManager.level);
+
         this.spawnEvent = this.time.addEvent({
-            delay: 1500, // Spawn every 1.5s
+            delay: spawnDelay, 
             callback: this.spawnDiglett,
             callbackScope: this,
             loop: true
         });
 
         // Instructions
-        this.add.text(this.cameras.main.width/2, 700, '¡Toca los Digletts para sumar el número exacto!', { fontSize: '24px', fill: '#ffffff' }).setOrigin(0.5);
+        // Instructions
+        this.add.text(this.cameras.main.width/2, 700, '¡Toca los Digletts para sumar el número exacto!', { fontSize: '24px', fontFamily: '"Fredoka One", cursive', fill: '#ffffff' }).setOrigin(0.5);
     }
 
     spawnDiglett() {
@@ -65,7 +73,7 @@ export class DiglettCounterScene extends MinigameScene {
         // Diglett Body
         const body = this.add.circle(0, 0, 40, 0x8D6E63); // Brown
         const nose = this.add.circle(0, -5, 10, 0xE91E63); // Pink nose
-        const valText = this.add.text(0, -50, `+${val}`, { fontSize: '32px', fontStyle: 'bold', fill: '#ffffff', stroke: '#000', strokeThickness: 4 }).setOrigin(0.5);
+        const valText = this.add.text(0, -50, `+${val}`, { fontSize: '32px', fontFamily: '"Fredoka One", cursive', fill: '#ffffff', stroke: '#000', strokeThickness: 4 }).setOrigin(0.5);
         
         container.add([body, nose, valText]);
         container.setSize(80, 80);
@@ -124,11 +132,11 @@ export class DiglettCounterScene extends MinigameScene {
         } else if (this.currentSum > this.targetNumber) {
             // LOSE / RESET
             this.cameras.main.shake(300, 0.02);
-            if (window.playTone) window.playTone(150, 'sawtooth', 0.5);
+            audioManager.playTone(150, 'sawtooth', 0.5);
             
             // Reset msg
             const resetMsg = this.add.text(this.cameras.main.width/2, this.cameras.main.height/2, '¡Te pasaste!', {
-                fontSize: '64px', fill: '#ff0000', stroke: '#fff', strokeThickness: 6
+                fontSize: '64px', fontFamily: '"Fredoka One", cursive', fill: '#ff0000', stroke: '#fff', strokeThickness: 6
             }).setOrigin(0.5).setDepth(200);
             
             this.tweens.add({

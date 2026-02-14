@@ -1,5 +1,7 @@
 import { MinigameScene } from './MinigameScene';
 import { UIHelper } from '../utils/UIHelper';
+import { gameManager } from '../managers/GameManager';
+import { audioManager } from '../managers/AudioManager';
 
 export class ChanseyMarketScene extends MinigameScene {
     constructor() {
@@ -23,10 +25,8 @@ export class ChanseyMarketScene extends MinigameScene {
         // Dark Overlay
         this.add.rectangle(0, 0, this.scale.width, this.scale.height, 0x000000, 0.7).setOrigin(0, 0);
 
-        this.addHelp("¡Ayuda a Chansey a dar el cambio!\n\n1. Mira el precio de la baya y cuánto dinero te dan.\n2. Resta para saber cuánto devolver.\n3. Toca las monedas de abajo para sumar esa cantidad.\n\nEJEMPLO:\nPrecio: 2€. Pagan con: 5€.\nDevuelves: 3€ (una moneda de 2€ y una de 1€).");
-
         // 1. Generate Problem based on Level
-        const level = window.GameState.level;
+        const level = gameManager.level;
         let minPrice = 1, maxPrice = 8;
         let paymentOptions = [5, 10];
         
@@ -38,7 +38,7 @@ export class ChanseyMarketScene extends MinigameScene {
             paymentOptions = [20, 50];
         }
 
-        const price = Phaser.Math.Between(minPrice, maxPrice); // Integer prices for now, maybe floats later? Kept int for simplicity as per original code implies (2-8)
+        const price = Phaser.Math.Between(minPrice, maxPrice); 
         // Ensure payment is higher than price
         const payment = paymentOptions.find(p => p > price) || (price + 10 - (price % 10)); // Fallback to next 10
         
@@ -50,20 +50,19 @@ export class ChanseyMarketScene extends MinigameScene {
         headerBg.fillStyle(0x000000, 0.6);
         headerBg.fillRect(0, 0, this.cameras.main.width, 180);
 
-        UIHelper.createTitle(this, 'Poké-Mart de Chansey');
-
-        // Level Display
-        this.add.text(this.cameras.main.width - 20, 20, `Nivel: ${window.GameState.level}`, {
-             fontSize: '32px', fontFamily: 'Arial', color: '#FFD700', stroke: '#000', strokeThickness: 4
-        }).setOrigin(1, 0);
+        // Header
+        UIHelper.createHeader(this, {
+            title: 'Poké-Mart de Chansey',
+            helpText: "¡Ayuda a Chansey a dar el cambio!\n\n1. Mira el precio de la baya y cuánto dinero te dan.\n2. Resta para saber cuánto devolver.\n3. Toca las monedas de abajo para sumar esa cantidad.\n\nEJEMPLO:\nPrecio: 2€. Pagan con: 5€.\nDevuelves: 3€ (una moneda de 2€ y una de 1€)."
+        });
         
         // Problem Display
         const problemBg = this.add.graphics();
         problemBg.fillStyle(0xFFFFFF, 0.9);
         problemBg.fillRoundedRect(this.cameras.main.width/2 - 300, 80, 600, 80, 20);
         
-        this.add.text(this.cameras.main.width/2, 105, `Baya: ${price}€  |  Pagas con: ${payment}€`, { fontSize: '32px', fill: '#D81B60', fontStyle: 'bold', fontFamily: 'Arial' }).setOrigin(0.5);
-        this.add.text(this.cameras.main.width/2, 145, `¿Cuánto cambio te devuelve Chansey?`, { fontSize: '24px', fill: '#333333', fontStyle: 'italic', fontFamily: 'Arial' }).setOrigin(0.5);
+        this.add.text(this.cameras.main.width/2, 105, `Baya: ${price}€  |  Pagas con: ${payment}€`, { fontSize: '32px', fill: '#D81B60', fontFamily: '"Fredoka One", cursive' }).setOrigin(0.5);
+        this.add.text(this.cameras.main.width/2, 145, `¿Cuánto cambio te devuelve Chansey?`, { fontSize: '24px', fill: '#333333', fontFamily: '"Fredoka One", cursive' }).setOrigin(0.5);
 
         // Visual Scene Elements
         const elementY = 320;
@@ -97,7 +96,7 @@ export class ChanseyMarketScene extends MinigameScene {
 
         const priceTag = this.add.container(this.cameras.main.width/2 - 80, elementY + 40);
         priceTag.add(this.add.rectangle(0, 0, 80, 30, 0xffffff).setStrokeStyle(2, 0x000000));
-        priceTag.add(this.add.text(0, 0, `${price}€`, { fontSize: '24px', fill: '#000', fontStyle: 'bold', fontFamily: 'Arial' }).setOrigin(0.5));
+        priceTag.add(this.add.text(0, 0, `${price}€`, { fontSize: '24px', fill: '#000', fontFamily: '"Fredoka One", cursive' }).setOrigin(0.5));
 
         // Payment (Money Bag Icon Procedural)
         const moneyIcon = this.add.container(this.cameras.main.width/2 + 80, elementY - 20);
@@ -109,21 +108,21 @@ export class ChanseyMarketScene extends MinigameScene {
         bagGfx.fillTriangle(-20, 0, 20, 0, 0, -30); // Top
         bagGfx.lineStyle(2, 0x000000);
         bagGfx.strokeCircle(0, 10, 30);
-        const dollar = this.add.text(0, 10, '€', { fontSize: '32px', color: '#000', fontStyle: 'bold' }).setOrigin(0.5);
+        const dollar = this.add.text(0, 10, '€', { fontSize: '32px', color: '#000', fontStyle: 'bold', fontFamily: '"Fredoka One", cursive' }).setOrigin(0.5);
         moneyIcon.add([bagGfx, dollar]);
 
          const payTag = this.add.container(this.cameras.main.width/2 + 80, elementY + 40);
         payTag.add(this.add.rectangle(0, 0, 80, 30, 0xffffff).setStrokeStyle(2, 0x000000));
-        payTag.add(this.add.text(0, 0, `-${payment}€`, { fontSize: '24px', fill: '#d32f2f', fontStyle: 'bold', fontFamily: 'Arial' }).setOrigin(0.5));
+        payTag.add(this.add.text(0, 0, `-${payment}€`, { fontSize: '24px', fill: '#d32f2f', fontFamily: '"Fredoka One", cursive' }).setOrigin(0.5));
 
 
         // Change Box Area
         const boxY = 550;
         this.changeBox = this.add.rectangle(this.cameras.main.width/2, boxY, 500, 160, 0x37474F, 0.9);
         this.changeBox.setStrokeStyle(4, 0x90A4AE);
-        this.add.text(this.cameras.main.width/2, boxY, 'Pon el cambio aquí', { fontSize: '24px', fill: '#546E7A', fontStyle: 'bold' }).setOrigin(0.5).setAlpha(0.5);
+        this.add.text(this.cameras.main.width/2, boxY, 'Pon el cambio aquí', { fontSize: '24px', fill: '#546E7A', fontFamily: '"Fredoka One", cursive' }).setOrigin(0.5).setAlpha(0.5);
         
-        this.changeText = this.add.text(this.cameras.main.width/2, boxY + 50, 'Total: 0€', { fontSize: '36px', fill: '#ffffff', fontStyle: 'bold', stroke: '#000', strokeThickness: 4 }).setOrigin(0.5);
+        this.changeText = this.add.text(this.cameras.main.width/2, boxY + 50, 'Total: 0€', { fontSize: '36px', fill: '#ffffff', fontFamily: '"Fredoka One", cursive', stroke: '#000', strokeThickness: 4 }).setOrigin(0.5);
         
         // Group for animated coins in box
         this.changeCoinsGroup = this.add.group();
@@ -133,7 +132,7 @@ export class ChanseyMarketScene extends MinigameScene {
             const btn = this.add.container(x, y);
             const bg = this.add.rectangle(0, 0, 140, 50, color).setInteractive({ useHandCursor: true });
             bg.setStrokeStyle(2, 0xffffff);
-            const txt = this.add.text(0, 0, text, { fontSize: '20px', fontStyle: 'bold', fill: '#fff' }).setOrigin(0.5);
+            const txt = this.add.text(0, 0, text, { fontSize: '20px', fontFamily: '"Fredoka One", cursive', fill: '#fff' }).setOrigin(0.5);
             btn.add([bg, txt]);
             bg.on('pointerdown', () => {
                 this.tweens.add({ targets: btn, scaleX: 0.9, scaleY: 0.9, yoyo: true, duration: 50 });
@@ -151,12 +150,8 @@ export class ChanseyMarketScene extends MinigameScene {
         // Cash Register (Coins Source)
         const drawerY = 720;
         let denoms = [1, 2];
-        if (window.GameState.level >= 4) denoms = [0.5, 1, 2];
-        if (window.GameState.level >= 9) denoms = [0.2, 0.5, 1, 2];
-
-        // START FIX: Ensure we have small coins if the change requires it!
-        // If price/payment logic creates decimals (currently it doesn't, but for safety):
-        // For this iteration, logic generates Integers, so [1, 2] is fine for levels 1-3.
+        if (gameManager.level >= 4) denoms = [0.5, 1, 2];
+        if (gameManager.level >= 9) denoms = [0.2, 0.5, 1, 2];
         
         const startX = this.cameras.main.width/2;
         const spacing = 110; // Slightly tighter
@@ -175,7 +170,7 @@ export class ChanseyMarketScene extends MinigameScene {
             // Hit Area
             const hitArea = this.add.rectangle(x, drawerY, 100, 100, 0xffffff, 0.01).setInteractive({ useHandCursor: true });
             hitArea.on('pointerdown', () => {
-                if (window.playTone) window.playTone(600, 'sine', 0.05);
+                audioManager.playTone(600, 'sine', 0.05);
                 this.addCoinToChange(val);
                 
                 // Animation
@@ -207,10 +202,9 @@ export class ChanseyMarketScene extends MinigameScene {
     checkResult(target) {
         // Floating point comparison safety
         if (Math.abs(this.currentChangeGiven - target) < 0.001) {
-            const reward = 10 + (window.GameState.level * 2);
+            const reward = 10 + (gameManager.level * 2);
             // Level Up
-            window.GameState.level += 1;
-            window.saveGame();
+            gameManager.levelUp();
             
             this.completeMinigame(reward);
         } else {

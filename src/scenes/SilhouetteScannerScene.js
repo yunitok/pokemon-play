@@ -1,5 +1,7 @@
 import { MinigameScene } from './MinigameScene';
 import { UIHelper } from '../utils/UIHelper';
+import { gameManager } from '../managers/GameManager';
+import { audioManager } from '../managers/AudioManager';
 
 export class SilhouetteScannerScene extends MinigameScene {
     constructor() {
@@ -26,11 +28,12 @@ export class SilhouetteScannerScene extends MinigameScene {
         // Dark Overlay
         this.add.rectangle(0, 0, this.scale.width, this.scale.height, 0x000000, 0.7).setOrigin(0, 0);
 
-        this.addHelp("¡Ordena las monedas!\n\nArrastra las monedas de abajo hacia la sombra que tenga su mismo valor o tamaño.\n\nPISTA:\nLa moneda pequeña de 1 céntimo va en la sombra pequeña.\nLa moneda grande de 2€ va en la sombra grande.");
-        
-        // Title
-        UIHelper.createTitle(this, 'El Tesoro de Gimmighoul');
-        this.add.text(this.cameras.main.width/2, 110, 'Arrastra la moneda correcta a su silueta', { fontSize: '20px', fill: '#dddddd' }).setOrigin(0.5);
+        // Header
+        UIHelper.createHeader(this, {
+             title: 'El Tesoro de Gimmighoul',
+             helpText: "¡Ordena las monedas!\n\nArrastra las monedas de abajo hacia la sombra que tenga su mismo valor o tamaño.\n\nPISTA:\nLa moneda pequeña de 1 céntimo va en la sombra pequeña.\nLa moneda grande de 2€ va en la sombra grande."
+        });
+        this.add.text(this.cameras.main.width/2, 110, 'Arrastra la moneda correcta a su silueta', { fontSize: '20px', fontFamily: '"Fredoka One", cursive', fill: '#dddddd' }).setOrigin(0.5);
 
         // State
         this.matches = 0;

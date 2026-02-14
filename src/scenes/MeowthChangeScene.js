@@ -1,5 +1,8 @@
 import { MinigameScene } from './MinigameScene';
 import { UIHelper } from '../utils/UIHelper';
+import { Difficulty } from '../utils/Difficulty';
+import { audioManager } from '../managers/AudioManager';
+import { gameManager } from '../managers/GameManager';
 
 export class MeowthChangeScene extends MinigameScene {
     constructor() {
@@ -23,16 +26,18 @@ export class MeowthChangeScene extends MinigameScene {
         // Dark Overlay
         this.add.rectangle(0, 0, this.scale.width, this.scale.height, 0x000000, 0.7).setOrigin(0, 0);
 
-        this.addHelp("¡Encuentra el tesoro exacto!\n\nMeowth pide una cantidad.\nBusca el cofre que tenga las monedas que suman esa cantidad.\n\nEJEMPLO:\nMeowth pide: 1€\nCofre A: 50c + 20c (¡No! Son 70c)\nCofre B: 50c + 50c (¡Sí! Es 1€)");
-
         // 1. Setup Problem
-        // Target: 1.00 or 2.00 usually, maybe 0.50
-        const possibleTargets = [0.50, 1.00, 2.00];
+        // Target Logic from Difficulty
+        const possibleTargets = Difficulty.getMeowthTargetMoney(gameManager.level);
         const targetValue = possibleTargets[Math.floor(Math.random() * possibleTargets.length)];
         
-        // UI
-        UIHelper.createTitle(this, 'Cofres Meowth');
-        this.add.text(this.cameras.main.width/2, 130, `¿Cuál de estos cofres tiene ${targetValue.toFixed(2)}€?`, { fontSize: '28px', fill: '#ffff00', backgroundColor: '#333', padding: { x: 10, y: 5 } }).setOrigin(0.5);
+        // Header
+        UIHelper.createHeader(this, {
+            title: 'Cofres Meowth',
+            helpText: "¡Encuentra el tesoro exacto!\n\nMeowth pide una cantidad.\nBusca el cofre que tenga las monedas que suman esa cantidad.\n\nEJEMPLO:\nMeowth pide: 1€\nCofre A: 50c + 20c (¡No! Son 70c)\nCofre B: 50c + 50c (¡Sí! Es 1€)"
+        });
+
+        this.add.text(this.cameras.main.width/2, 130, `¿Cuál de estos cofres tiene ${targetValue.toFixed(2)}€?`, { fontSize: '28px', fontFamily: '"Fredoka One", cursive', fill: '#ffff00', backgroundColor: '#333', padding: { x: 10, y: 5 } }).setOrigin(0.5);
 
         // Meowth (Placeholder)
         const meowth = this.add.circle(150, 200, 60, 0xFFECB3); // Cream color
@@ -102,7 +107,7 @@ export class MeowthChangeScene extends MinigameScene {
             });
             
             // Label A, B, C
-            const label = this.add.text(0, -130, `Opción ${String.fromCharCode(65+i)}`, { fontSize: '24px', fontStyle: 'bold' }).setOrigin(0.5);
+            const label = this.add.text(0, -130, `Opción ${String.fromCharCode(65+i)}`, { fontSize: '24px', fontFamily: '"Fredoka One", cursive' }).setOrigin(0.5);
             container.add(label);
         });
     }

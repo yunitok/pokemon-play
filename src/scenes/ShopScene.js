@@ -1,5 +1,7 @@
 import { fadeOutAndSwitch } from '../utils/transition';
 import { UIHelper } from '../utils/UIHelper';
+import { gameManager } from '../managers/GameManager';
+import { audioManager } from '../managers/AudioManager';
 
 export class ShopScene extends Phaser.Scene {
     constructor() {
@@ -14,10 +16,6 @@ export class ShopScene extends Phaser.Scene {
         this.cameras.main.fadeIn(500, 0, 0, 0);
 
         // --- 1. Background & Overlay ---
-        // Draw the menu background first
-        // Draw the menu background first
-        // Draw the menu background first
-        // Draw the menu background first
         if (window.setAppBackground) window.setAppBackground('#000000');
         this.add.image(this.scale.width / 2, this.scale.height / 2, 'bg_shop')
             .setDisplaySize(this.scale.width, this.scale.height);
@@ -93,11 +91,10 @@ export class ShopScene extends Phaser.Scene {
         this.coinBg.strokeRoundedRect(x - 20, y - 20, 140, 40, 20);
 
         this.coinIcon = this.add.image(x, y, 'coin').setDisplaySize(32, 32);
-        this.coinText = this.add.text(x + 25, y, `${window.GameState.coins}`, {
+        this.coinText = this.add.text(x + 25, y, `${gameManager.coins}`, {
             fontSize: '26px', // Smaller
-            fontFamily: 'sans-serif',
-            color: '#FFD700',
-            fontStyle: 'bold'
+            fontFamily: '"Fredoka One", cursive',
+            color: '#FFD700'
         }).setOrigin(0, 0.5);
     }
 
@@ -132,18 +129,17 @@ export class ShopScene extends Phaser.Scene {
         // 4. Name
         const nameText = this.add.text(0, 15, name, {
             fontSize: '20px', // Smaller font
-            fontFamily: 'sans-serif',
+            fontFamily: '"Fredoka One", cursive',
             color: '#ffffff',
-            fontStyle: 'bold',
             stroke: '#000',
             strokeThickness: 2
         }).setOrigin(0.5);
 
         // 5. Inventory Text
-        const ownedCount = window.GameState.inventory[id] || 0;
+        const ownedCount = gameManager.inventory[id] || 0;
         const invText = this.add.text(0, 40, `Tienes: ${ownedCount}`, {
             fontSize: '14px', // Smaller font
-            fontFamily: 'sans-serif',
+            fontFamily: '"Fredoka One", cursive',
             color: '#DDDDDD'
         }).setOrigin(0.5);
         container.invText = invText;
@@ -167,9 +163,8 @@ export class ShopScene extends Phaser.Scene {
 
         const btnText = this.add.text(0, -5, `${cost}`, {
             fontSize: '22px', // Smaller font
-            fontFamily: 'sans-serif',
-            color: '#fff',
-            fontStyle: 'bold'
+            fontFamily: '"Fredoka One", cursive',
+            color: '#fff'
         }).setOrigin(0.5);
         
         const btnIcon = this.add.image(-30, -5, 'coin').setDisplaySize(20, 20);
@@ -197,7 +192,7 @@ export class ShopScene extends Phaser.Scene {
         container.add(hitArea); // Add invisible hit area for button
 
         hitArea.on('pointerdown', () => {
-            if (window.GameState.coins >= cost) {
+            if (gameManager.coins >= cost) {
                 // Click animation
                 this.tweens.add({
                     targets: btn,
@@ -235,21 +230,18 @@ export class ShopScene extends Phaser.Scene {
     }
 
     buyItem(id, cost, container) {
-        window.GameState.coins -= cost;
-        window.GameState.inventory[id] = (window.GameState.inventory[id] || 0) + 1;
-        window.saveGame();
+        if (gameManager.spendCoins(cost)) {
+            gameManager.addItem(id);
+            
+            this.updateCoinDisplay();
+            container.invText.setText(`Tienes: ${gameManager.inventory[id] || 0}`);
 
-        this.updateCoinDisplay();
-        container.invText.setText(`Tienes: ${window.GameState.inventory[id]}`);
-
-        if (window.playTone) {
-            window.playTone(800, 'sine', 0.1);
-            setTimeout(() => window.playTone(1200, 'sine', 0.1), 100);
+            audioManager.playUiSound(); // Or specific buy sound if we had one
         }
     }
 
     cantAfford(container) {
-        if (window.playTone) window.playTone(150, 'sawtooth', 0.2);
+         audioManager.playLoseSound(); // Or generic 'error' sound
         this.tweens.add({
             targets: container,
             x: container.x + 10,
@@ -279,16 +271,15 @@ export class ShopScene extends Phaser.Scene {
         // Title
         const title = this.add.text(0, 0, name, {
             fontSize: '48px',
-            fontFamily: '"Segoe UI", Tahoma, sans-serif',
-            color: '#3B4CCA',
-            fontStyle: 'bold'
+            fontFamily: '"Fredoka One", cursive',
+            color: '#3B4CCA'
         }).setOrigin(0, 0);
 
         // Description
         const description = this.itemDescriptions[id] || "Sin descripción.";
         const descText = this.add.text(0, title.height + 20, description, {
             fontSize: '28px',
-            fontFamily: '"Segoe UI", Tahoma, sans-serif',
+            fontFamily: '"Fredoka One", cursive',
             color: '#333333',
             wordWrap: { width: contentWidth },
             lineSpacing: 8
@@ -328,7 +319,7 @@ export class ShopScene extends Phaser.Scene {
         const closeTxt = this.add.text(0, 0, 'CERRAR', {
             fontSize: '28px',
             color: '#fff',
-            fontStyle: 'bold'
+            fontFamily: '"Fredoka One", cursive'
         }).setOrigin(0.5);
         closeBtn.add([closeBg, closeTxt]);
 
@@ -338,7 +329,7 @@ export class ShopScene extends Phaser.Scene {
         this.tweens.add({ targets: popup, scaleX: 1, scaleY: 1, duration: 300, ease: 'Back.out' });
 
         const close = () => {
-             if (window.playUiSound) window.playUiSound();
+             audioManager.playUiSound();
             this.tweens.add({
                 targets: popup, scaleX: 0, scaleY: 0, duration: 200,
                 onComplete: () => {

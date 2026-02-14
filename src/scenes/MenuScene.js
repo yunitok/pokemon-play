@@ -1,4 +1,5 @@
 import { fadeOutAndSwitch } from '../utils/transition';
+import { audioManager } from '../managers/AudioManager';
 
 export class MenuScene extends Phaser.Scene {
     constructor() {
@@ -16,13 +17,12 @@ export class MenuScene extends Phaser.Scene {
 
         // Title
         const titleText = this.add.text(width / 2, 80, 'PokemonPlay', {
-            fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif',
+            fontFamily: '"Fredoka One", cursive',
             fontSize: '64px',
             color: '#FFCB05',
             stroke: '#3B4CCA',
             strokeThickness: 8,
-            shadow: { offsetX: 2, offsetY: 2, color: '#000', blur: 5, stroke: true, fill: true },
-            fontStyle: 'bold'
+            shadow: { offsetX: 2, offsetY: 2, color: '#000', blur: 5, stroke: true, fill: true }
         }).setOrigin(0.5);
 
         // Tween Title
@@ -80,7 +80,7 @@ export class MenuScene extends Phaser.Scene {
         graphics.strokeRoundedRect(-150, -40, 300, 80, 15);
         
         const label = this.add.text(0, 0, text, {
-            fontFamily: 'sans-serif',
+            fontFamily: '"Fredoka One", cursive',
             fontSize: '24px',
             color: '#ffffff'
         }).setOrigin(0.5);
@@ -92,7 +92,7 @@ export class MenuScene extends Phaser.Scene {
         btnContainer.add([graphics, label, bg]);
 
         bg.on('pointerdown', () => {
-             if (window.playUiSound) window.playUiSound();
+             audioManager.playUiSound();
             this.tweens.add({
                 targets: btnContainer,
                 scaleX: 0.9, scaleY: 0.9, duration: 100, yoyo: true,

@@ -1,5 +1,8 @@
 import { fadeOutAndSwitch } from '../utils/transition';
 import { UIHelper } from '../utils/UIHelper';
+import { audioManager } from '../managers/AudioManager';
+import { gameManager } from '../managers/GameManager';
+import { Difficulty } from '../utils/Difficulty';
 
 export class MinigameScene extends Phaser.Scene {
     constructor(key) {
@@ -14,20 +17,21 @@ export class MinigameScene extends Phaser.Scene {
         // Common background
         this.add.image(this.cameras.main.width / 2, this.cameras.main.height / 2, 'bg_game');
 
-        // Standard Back Button
-        UIHelper.createBackButton(this, () => this.returnToMenu());
-
-        // Note: Title is not created here because it varies per game.
-        // Subclasses should call UIHelper.createTitle(this, 'Title');
+        // Note: We don't create header here automatically because we need title/helpText
+        // Subclasses will call UIHelper.createHeader(this, { title: '...', helpText: '...' });
     }
 
     returnToMenu() {
         fadeOutAndSwitch(this, 'MenuScene');
     }
 
+    // Deprecated: addHelp is now part of createHeader, but keeping for compatibility if needed
+    // Better to remove calls to this in subclasses and move to createHeader.
     addHelp(helpText) {
-        // Standard Help Button
-        UIHelper.createHelpButton(this, () => this.showHelp(helpText));
+        // No-op or log warning if used directly? 
+        // Or we can just leave it as a helper or logic for the help dialog itself?
+        // Actually, the header creates the button which calls showHelp.
+        // So we don't need to manually create the button here.
     }
 
     showHelp(text) {
@@ -46,14 +50,14 @@ export class MinigameScene extends Phaser.Scene {
         // Title
         const title = this.add.text(0, 0, 'AYUDA', {
             fontSize: '36px',
-            fontStyle: 'bold',
+            fontFamily: '"Fredoka One", cursive',
             color: '#FFD700'
         }).setOrigin(0.5);
 
         // Content Text
         const content = this.add.text(0, 0, text, {
             fontSize: '26px',
-            fontFamily: 'Arial',
+            fontFamily: '"Fredoka One", cursive',
             color: '#ffffff',
             align: 'center',
             wordWrap: { width: internalWidth },
@@ -63,9 +67,9 @@ export class MinigameScene extends Phaser.Scene {
         // Close Button
         const closeBtn = this.add.text(0, 0, 'ENTENDIDO', {
             fontSize: '28px',
+            fontFamily: '"Fredoka One", cursive',
             backgroundColor: '#4CAF50',
-            padding: { x: 30, y: 10 },
-            fontStyle: 'bold'
+            padding: { x: 30, y: 10 }
         }).setOrigin(0.5).setInteractive({ useHandCursor: true });
 
         // 3. Calculate Heights & Positions
@@ -93,7 +97,7 @@ export class MinigameScene extends Phaser.Scene {
 
         // Close Interaction
         closeBtn.on('pointerdown', () => {
-             if (window.playUiSound) window.playUiSound();
+             audioManager.playUiSound();
             this.tweens.add({
                 targets: container,
                 scaleX: 0, scaleY: 0,
@@ -118,7 +122,7 @@ export class MinigameScene extends Phaser.Scene {
     showFeedback(success, x, y) {
         if (success) {
             // Ding sound
-            if (window.playTone) window.playTone(880, 'sine', 0.1);
+            audioManager.playUiSound();
             
             // Stars particle effect (simplified)
             const star = this.add.text(x || this.input.x, y || this.input.y, '⭐', { fontSize: '64px' }).setOrigin(0.5).setDepth(200);
@@ -131,34 +135,42 @@ export class MinigameScene extends Phaser.Scene {
             });
         } else {
             // Error sound
-            if (window.playTone) window.playTone(150, 'sawtooth', 0.3);
+            audioManager.playLoseSound(); // Or generic error?
             this.cameras.main.shake(200, 0.01);
         }
     }
 
-    completeMinigame(reward) {
+    completeMinigame(baseReward) {
         // Victory fanfare
-        if (window.playTone) {
-            window.playTone(523, 'square', 0.1);
-            setTimeout(() => window.playTone(659, 'square', 0.1), 100);
-            setTimeout(() => window.playTone(784, 'square', 0.2), 200);
-            setTimeout(() => window.playTone(1046, 'square', 0.4), 400);
+        audioManager.playWinSound();
+
+        // 1. Unified Reward Scaling
+        const currentLevel = gameManager.level;
+        const reward = Difficulty.getMinigameReward(currentLevel);
+
+        gameManager.addCoins(reward);
+
+        // 2. Item Drop Check
+        const itemDropped = gameManager.checkItemDrop();
+        
+        let messageText = `¡Ganaste ${reward} monedas!`;
+        if (itemDropped) {
+             messageText += `\n\n¡ENCONTRASTE UN OBJETO!\n(${itemDropped.toUpperCase()})`;
+             audioManager.playUiSound(); // Extra sound for item
         }
 
-        const msg = this.add.text(this.cameras.main.width/2, this.cameras.main.height/2, `¡Ganaste ${reward} monedas!`, {
-            fontSize: '64px',
+        const msg = this.add.text(this.cameras.main.width/2, this.cameras.main.height/2, messageText, {
+            fontSize: '48px',
+            fontFamily: '"Fredoka One", cursive',
             fill: '#ffff00',
             stroke: '#000000',
             strokeThickness: 6,
-            backgroundColor: 'rgba(0,0,0,0.7)',
-            padding: { x: 20, y: 20 }
+            backgroundColor: 'rgba(0,0,0,0.8)',
+            padding: { x: 30, y: 30 },
+            align: 'center'
         }).setOrigin(0.5).setDepth(200);
 
-        if (window.updateGlobalCoins) {
-            window.updateGlobalCoins(reward);
-        }
-
-        this.time.delayedCall(3000, () => {
+        this.time.delayedCall(3500, () => {
             this.returnToMenu();
         });
     }

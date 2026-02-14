@@ -1,0 +1,45 @@
+# Antigravity Context Exclusion Rules
+# Use standard gitignore syntax to exclude files and folders from the agent's global context analysis.
+
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Build and output directories
+dist/
+build/
+out/
+.next/
+.nuxt/
+target/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE and Project specific
+.git/
+.svn/
+.hg/
+.idea/
+.vscode/
+.antigravity/
+.agent/
+.agentignore
+.claudeignore
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# Project-specific legacy/temp folders
+src_legacy/
+tmp/
+temp/

@@ -1,4 +1,6 @@
 import { fadeOutAndSwitch } from './transition';
+import { audioManager } from '../managers/AudioManager';
+import { gameManager } from '../managers/GameManager';
 
 export class UIHelper {
     /**
@@ -70,7 +72,7 @@ export class UIHelper {
         const arrow = scene.add.text(0, -2, '⬅', { 
             fontSize: '34px', 
             color: '#fff',
-            fontFamily: 'Arial' // Ensure consistent rendering
+            fontFamily: '"Fredoka One", cursive' // New Font
         }).setOrigin(0.5);
         
         container.add([bgFill, bgRing, arrow]);
@@ -78,7 +80,7 @@ export class UIHelper {
         // Interaction
         bgFill.setInteractive({ useHandCursor: true })
             .on('pointerdown', () => {
-                if (window.playUiSound) window.playUiSound();
+                audioManager.playUiSound();
                 if (callback) {
                     callback();
                 } else {
@@ -125,14 +127,15 @@ export class UIHelper {
             fontSize: '32px', 
             fontStyle: 'bold', 
             color: '#fff',
-            fontFamily: 'Arial'
+            fontFamily: '"Fredoka One", cursive' // New Font
         }).setOrigin(0.5);
 
         container.add([bgFill, bgRing, symbol]);
 
+        // Interaction
         bgFill.setInteractive({ useHandCursor: true })
             .on('pointerdown', () => {
-                if (window.playUiSound) window.playUiSound();
+                audioManager.playUiSound();
                 if (callback) callback();
             })
             .on('pointerover', () => {
@@ -154,16 +157,66 @@ export class UIHelper {
      */
     static createTitle(scene, text) {
         const x = scene.scale.width / 2;
-        const y = 60;
+        const y = 50; // Standardized Y
 
         return scene.add.text(x, y, text, {
             fontSize: '48px',
-            fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif',
+            fontFamily: '"Fredoka One", cursive',
             color: '#FFD700',
             stroke: '#3B4CCA',
             strokeThickness: 8,
-            fontStyle: 'bold',
             shadow: { offsetX: 3, offsetY: 3, color: '#000', blur: 5, fill: true }
         }).setOrigin(0.5).setScrollFactor(0).setDepth(90);
+    }
+
+    /**
+     * Creates a standardized full header with Back Btn, Level, Title, and Help Btn.
+     * @param {Phaser.Scene} scene 
+     * @param {Object} config 
+     * @param {string} config.title - Title text
+     * @param {boolean} [config.showLevel=true] - Whether to show level text
+     * @param {string} [config.helpText] - Text to show in help dialog. If omitted, no help button.
+     * @param {Function} [config.onBack] - Custom back action.
+     */
+    static createHeader(scene, config) {
+        const { title, showLevel = true, helpText, onBack } = config;
+
+        // 1. Back Button
+        this.createBackButton(scene, onBack);
+
+        // 2. Title (Created before Level to ensure depth order if needed, though depth handles it)
+        if (title) {
+            this.createTitle(scene, title);
+        }
+
+        // 3. Help Button
+        const helpBtnX = scene.scale.width - 60;
+        if (helpText) {
+            this.createHelpButton(scene, () => {
+                if (scene.showHelp) {
+                    scene.showHelp(helpText);
+                } else {
+                    console.warn('Scene missing showHelp method');
+                }
+            });
+        }
+
+        // 4. Level Text (Below Help Button, smaller)
+        if (showLevel) {
+             const level = (scene.gameManager && scene.gameManager.level) || 
+                          (window.gameManager && window.gameManager.level) || 1; 
+             
+             // Position below help button (which is at Y=50)
+             // If no help button, still keep it top right? Yes.
+             const levelY = helpText ? 95 : 50; 
+             
+             scene.add.text(helpBtnX, levelY, `Lvl ${level}`, {
+                fontSize: '20px', 
+                fontFamily: '"Fredoka One", cursive', 
+                color: '#FFD700', 
+                stroke: '#000', 
+                strokeThickness: 4
+            }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(90);
+        }
     }
 }
