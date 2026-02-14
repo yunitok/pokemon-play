@@ -1,17 +1,35 @@
 import Phaser from 'phaser';
 
+// Import WebFontLoader
+import WebFont from 'webfontloader';
+
 export class BootScene extends Phaser.Scene {
     constructor() {
         super('BootScene');
+        this.fontsReady = false;
+        this.assetsReady = false;
     }
 
     preload() {
         // Load Real Assets
         this.load.path = 'assets/';
 
-
-
-
+        // 1. Load Fonts
+        WebFont.load({
+            google: {
+                families: ['Fredoka One']
+            },
+            active: () => {
+                console.log('Fonts loaded!');
+                this.fontsReady = true;
+                this.checkReady();
+            },
+            inactive: () => {
+                console.warn('Fonts failed to load, proceeding anyway.');
+                this.fontsReady = true;
+                this.checkReady();
+            }
+        });
 
         this.load.image('bg_menu', 'images/bg_menu.webp');
         // Shared Game Background (Default for Minigames)
@@ -46,11 +64,19 @@ export class BootScene extends Phaser.Scene {
             progressBar.fillRect(width / 2 - 150, height / 2 - 15, 300 * value, 30);
         });
         
-        this.load.on('complete', function () {
+        this.load.on('complete', () => {
             progressBar.destroy();
             progressBox.destroy();
             loadingText.destroy();
+            console.log('Assets loaded!');
+            this.assetsReady = true;
+            this.checkReady();
+        });
+    }
+
+    checkReady() {
+        if (this.fontsReady && this.assetsReady) {
             this.scene.start('MenuScene');
-        }.bind(this));
+        }
     }
 }

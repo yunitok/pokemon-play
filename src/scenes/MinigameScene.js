@@ -36,16 +36,16 @@ export class MinigameScene extends Phaser.Scene {
 
     showHelp(text) {
         const container = this.add.container(0, 0).setDepth(2000).setScrollFactor(0);
-        
+
         // Background overlay
-        const bg = this.add.rectangle(this.cameras.main.width/2, this.cameras.main.height/2, this.cameras.main.width, this.cameras.main.height, 0x000000, 0.8)
+        const bg = this.add.rectangle(this.cameras.main.width / 2, this.cameras.main.height / 2, this.cameras.main.width, this.cameras.main.height, 0x000000, 0.8)
             .setInteractive(); // Block clicks below
-            
+
         // 1. Setup Content Width
         const boxW = 650;
         const padding = 30;
         const internalWidth = boxW - (padding * 2);
-        
+
         // 2. Create Text Objects FIRST to measure
         // Title
         const title = this.add.text(0, 0, 'AYUDA', {
@@ -75,29 +75,29 @@ export class MinigameScene extends Phaser.Scene {
         // 3. Calculate Heights & Positions
         const gapTitle = 20;
         const gapBtn = 30;
-        
+
         // Total Height Calculation
         const totalContentHeight = title.height + gapTitle + content.height + gapBtn + closeBtn.height;
         const boxH = totalContentHeight + (padding * 2);
-        
+
         // Center Position
         const centerX = this.cameras.main.width / 2;
         const centerY = this.cameras.main.height / 2;
-        
+
         // 4. Draw Box
         const box = this.add.rectangle(centerX, centerY, boxW, boxH, 0x333333).setStrokeStyle(4, 0xffffff);
-        
+
         // 5. Position Elements relative to CenterY
         // Start Y (Top of content)
         const startY = centerY - (totalContentHeight / 2);
-        
-        title.setPosition(centerX, startY + title.height/2);
-        content.setPosition(centerX, title.y + title.height/2 + gapTitle + content.height/2);
-        closeBtn.setPosition(centerX, content.y + content.height/2 + gapBtn + closeBtn.height/2);
+
+        title.setPosition(centerX, startY + title.height / 2);
+        content.setPosition(centerX, title.y + title.height / 2 + gapTitle + content.height / 2);
+        closeBtn.setPosition(centerX, content.y + content.height / 2 + gapBtn + closeBtn.height / 2);
 
         // Close Interaction
         closeBtn.on('pointerdown', () => {
-             audioManager.playUiSound();
+            audioManager.playUiSound();
             this.tweens.add({
                 targets: container,
                 scaleX: 0, scaleY: 0,
@@ -105,10 +105,10 @@ export class MinigameScene extends Phaser.Scene {
                 onComplete: () => container.destroy()
             });
         });
-        
+
         // Add to Container
         container.add([bg, box, title, content, closeBtn]);
-        
+
         // Animation
         container.setScale(0);
         this.tweens.add({
@@ -123,7 +123,7 @@ export class MinigameScene extends Phaser.Scene {
         if (success) {
             // Ding sound
             audioManager.playUiSound();
-            
+
             // Stars particle effect (simplified)
             const star = this.add.text(x || this.input.x, y || this.input.y, '⭐', { fontSize: '64px' }).setOrigin(0.5).setDepth(200);
             this.tweens.add({
@@ -149,30 +149,52 @@ export class MinigameScene extends Phaser.Scene {
         const reward = Difficulty.getMinigameReward(currentLevel);
 
         gameManager.addCoins(reward);
+        gameManager.levelUp(); // Advance Level
+
+        // Update Header Level Display immediately
+        if (this.headerLevelText) {
+            this.headerLevelText.setText(`Lvl ${gameManager.level}`);
+            // Pop effect
+            this.tweens.add({
+                targets: this.headerLevelText,
+                scale: 1.5,
+                duration: 200,
+                yoyo: true
+            });
+        }
 
         // 2. Item Drop Check
         const itemDropped = gameManager.checkItemDrop();
-        
+
         let messageText = `¡Ganaste ${reward} monedas!`;
         if (itemDropped) {
-             messageText += `\n\n¡ENCONTRASTE UN OBJETO!\n(${itemDropped.toUpperCase()})`;
-             audioManager.playUiSound(); // Extra sound for item
+            messageText += `\n\n¡ENCONTRASTE UN OBJETO!\n(${itemDropped.toUpperCase()})`;
+            audioManager.playUiSound(); // Extra sound for item
         }
 
-        const msg = this.add.text(this.cameras.main.width/2, this.cameras.main.height/2, messageText, {
-            fontSize: '48px',
-            fontFamily: '"Fredoka One", cursive',
-            fill: '#ffff00',
-            stroke: '#000000',
-            strokeThickness: 6,
-            backgroundColor: 'rgba(0,0,0,0.8)',
-            padding: { x: 30, y: 30 },
-            align: 'center'
-        }).setOrigin(0.5).setDepth(200);
-
-        this.time.delayedCall(3500, () => {
-            this.returnToMenu();
+        // Use Unified UI Helper
+        UIHelper.showFeedbackMessage(this, messageText, 'success', () => {
+            // "Snorlax Behavior": Infinite progression until quit/fail
+            // Restart the scene to generate new problem at new level
+            this.scene.restart();
         });
+    }
+
+    failMinigame(message = '¡Inténtalo de nuevo!') {
+        // Standard Fail State
+        audioManager.playLoseSound();
+        this.cameras.main.shake(300, 0.02);
+
+        UIHelper.showFeedbackMessage(this, message, 'error', () => {
+            // Optional callback, for now just ensures visual consistency
+        });
+    }
+
+    // Helper to store header ref from subclasses
+    setupHeader(title, helpText) {
+        const headerUI = UIHelper.createHeader(this, { title, helpText });
+        this.headerLevelText = headerUI.levelText;
+        return headerUI;
     }
 
     createCoinVisual(x, y, value) {
@@ -194,7 +216,7 @@ export class MinigameScene extends Phaser.Scene {
 
         const circle = this.add.circle(0, 0, radius, color);
         circle.setStrokeStyle(4, strokeColor);
-        
+
         // Special bicolor effect for 1e and 2e
         if (Math.abs(value - 1.00) < 0.001 || Math.abs(value - 2.00) < 0.001) {
             const inner = this.add.circle(0, 0, radius * 0.7, Math.abs(value - 1.00) < 0.001 ? 0xffd700 : 0xc0c0c0);
@@ -209,14 +231,14 @@ export class MinigameScene extends Phaser.Scene {
             color: '#000000',
             fontStyle: 'bold'
         }).setOrigin(0.5);
-        
+
         container.add(label);
-        
+
         container.setSize(radius * 2, radius * 2);
-        
+
         // Add data for logic
         container.setData('value', value);
-        
+
         return container;
     }
 }

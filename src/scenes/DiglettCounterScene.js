@@ -30,24 +30,25 @@ export class DiglettCounterScene extends MinigameScene {
         const range = Difficulty.getDiglettTarget(gameManager.level);
         this.targetNumber = Phaser.Math.Between(range.min, range.max);
         this.currentSum = 0;
-        
+
         // Header
-        UIHelper.createHeader(this, {
-            title: 'Contador de Digletts',
-            helpText: "¡Vamos a sumar!\n\nToca los Digletts para sumar sus números hasta llegar al OBJETIVO exacto.\n\nEJEMPLO:\nObjetivo: 10\nSi tocas un 5 y un 3, llevas 8.\n¡Te falta un 2! (5 + 3 + 2 = 10)."
-        });
+        // Header
+        this.setupHeader(
+            'Contador de Digletts',
+            "¡Vamos a sumar!\n\nToca los Digletts para sumar sus números hasta llegar al OBJETIVO exacto.\n\nEJEMPLO:\nObjetivo: 10\nSi tocas un 5 y un 3, llevas 8.\n¡Te falta un 2! (5 + 3 + 2 = 10)."
+        );
 
         this.targetText = this.add.text(200, 150, `Objetivo: ${this.targetNumber}`, { fontSize: '48px', fontFamily: '"Fredoka One", cursive', fill: '#ffff00', backgroundColor: '#333', padding: { x: 20, y: 10 } }).setOrigin(0.5);
         this.sumText = this.add.text(this.cameras.main.width - 200, 150, `Suma: 0`, { fontSize: '48px', fontFamily: '"Fredoka One", cursive', fill: '#ffffff', backgroundColor: '#333', padding: { x: 20, y: 10 } }).setOrigin(0.5);
 
         // Diglett Group
         this.digletts = this.add.group();
-        
+
         // Timer for spawning from Difficulty
         const spawnDelay = Difficulty.getDiglettNewSpawnInterval(gameManager.level);
 
         this.spawnEvent = this.time.addEvent({
-            delay: spawnDelay, 
+            delay: spawnDelay,
             callback: this.spawnDiglett,
             callbackScope: this,
             loop: true
@@ -55,7 +56,7 @@ export class DiglettCounterScene extends MinigameScene {
 
         // Instructions
         // Instructions
-        this.add.text(this.cameras.main.width/2, 700, '¡Toca los Digletts para sumar el número exacto!', { fontSize: '24px', fontFamily: '"Fredoka One", cursive', fill: '#ffffff' }).setOrigin(0.5);
+        this.add.text(this.cameras.main.width / 2, 700, '¡Toca los Digletts para sumar el número exacto!', { fontSize: '24px', fontFamily: '"Fredoka One", cursive', fill: '#ffffff' }).setOrigin(0.5);
     }
 
     spawnDiglett() {
@@ -63,21 +64,21 @@ export class DiglettCounterScene extends MinigameScene {
 
         const x = Phaser.Math.Between(100, this.cameras.main.width - 100);
         const y = Phaser.Math.Between(250, 600);
-        
+
         // Values: 1, 2, 5
         const val = Phaser.Math.RND.pick([1, 2, 5]);
-        
+
         // Visuals (Placeholder: Brown Capsule/Circle)
         const container = this.add.container(x, y);
-        
+
         // Diglett Body
         const body = this.add.circle(0, 0, 40, 0x8D6E63); // Brown
         const nose = this.add.circle(0, -5, 10, 0xE91E63); // Pink nose
         const valText = this.add.text(0, -50, `+${val}`, { fontSize: '32px', fontFamily: '"Fredoka One", cursive', fill: '#ffffff', stroke: '#000', strokeThickness: 4 }).setOrigin(0.5);
-        
+
         container.add([body, nose, valText]);
         container.setSize(80, 80);
-        
+
         // Interaction
         container.setInteractive({ useHandCursor: true });
         container.on('pointerdown', () => {
@@ -111,14 +112,14 @@ export class DiglettCounterScene extends MinigameScene {
     handleDiglettClick(val, diglett) {
         if (!diglett.active) return;
         diglett.disableInteractive(); // Visual click feedback handling next
-        
+
         // Visual feedback
         this.showFeedback(true, diglett.x, diglett.y);
-        
+
         // Update Logic
         this.currentSum += val;
         this.sumText.setText(`Suma: ${this.currentSum}`);
-        
+
         // Destroy Diglett
         diglett.destroy();
 
@@ -131,26 +132,20 @@ export class DiglettCounterScene extends MinigameScene {
             this.completeMinigame(20);
         } else if (this.currentSum > this.targetNumber) {
             // LOSE / RESET
-            this.cameras.main.shake(300, 0.02);
-            audioManager.playTone(150, 'sawtooth', 0.5);
-            
-            // Reset msg
-            const resetMsg = this.add.text(this.cameras.main.width/2, this.cameras.main.height/2, '¡Te pasaste!', {
-                fontSize: '64px', fontFamily: '"Fredoka One", cursive', fill: '#ff0000', stroke: '#fff', strokeThickness: 6
-            }).setOrigin(0.5).setDepth(200);
-            
-            this.tweens.add({
-                targets: resetMsg,
-                scaleX: 1.5, scaleY: 1.5, alpha: 0,
-                duration: 1000,
-                onComplete: () => resetMsg.destroy()
-            });
 
-            // Reset Logic
+            // Use unified fail helper from base class/UIHelper logic
+            // We want to reset AFTER the message, or during?
+            // The UIHelper blocks the screen a bit.
+
+            this.failMinigame('¡Te pasaste!');
+
+            // Reset Logic immediately or wait? 
+            // If we reset immediately, the user sees 0. 
+            // Let's reset visually immediately.
             this.currentSum = 0;
             this.sumText.setText(`Suma: 0`);
             this.sumText.setColor('#ffffff');
-            
+
             // Clear current digletts
             this.digletts.children.each(d => {
                 if (d.active) {

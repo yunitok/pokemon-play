@@ -37,5 +37,11 @@ export const Difficulty = {
         // This is a placeholder for future logic
         if (level < 5) return [0.50, 1.00, 2.00];
         return [0.50, 1.00, 1.50, 2.00, 2.50, 5.00];
+    },
+
+    // Generic Minigame Reward
+    getMinigameReward(level) {
+        // Base 15 coins + 5 per level
+        return Math.floor(15 + (level * 5));
     }
 };

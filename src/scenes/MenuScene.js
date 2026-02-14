@@ -16,18 +16,18 @@ export class MenuScene extends Phaser.Scene {
         this.add.image(width / 2, height / 2, 'bg_menu').setDisplaySize(width, height);
 
         // Title
-        const titleText = this.add.text(width / 2, 80, 'PokemonPlay', {
+        const title = this.add.text(this.cameras.main.width / 2, 120, 'POKEMONPLAY', {
+            fontSize: '72px',
             fontFamily: '"Fredoka One", cursive',
-            fontSize: '64px',
-            color: '#FFCB05',
+            fill: '#FFD700',
             stroke: '#3B4CCA',
             strokeThickness: 8,
-            shadow: { offsetX: 2, offsetY: 2, color: '#000', blur: 5, stroke: true, fill: true }
+            shadow: { offsetX: 3, offsetY: 3, color: '#000', blur: 5, fill: true }
         }).setOrigin(0.5);
 
         // Tween Title
         this.tweens.add({
-            targets: titleText,
+            targets: title,
             y: 90,
             duration: 1500,
             yoyo: true,
@@ -72,13 +72,13 @@ export class MenuScene extends Phaser.Scene {
 
         const bg = this.add.rectangle(0, 0, 300, 80, color, 1);
         bg.setInteractive({ useHandCursor: true });
-        
+
         const graphics = this.add.graphics();
         graphics.fillStyle(color, 1);
         graphics.lineStyle(4, 0xffffff, 1);
         graphics.fillRoundedRect(-150, -40, 300, 80, 15);
         graphics.strokeRoundedRect(-150, -40, 300, 80, 15);
-        
+
         const label = this.add.text(0, 0, text, {
             fontFamily: '"Fredoka One", cursive',
             fontSize: '24px',
@@ -88,11 +88,11 @@ export class MenuScene extends Phaser.Scene {
         // Hit Area Hack (Invisible Rect)
         bg.setVisible(true);
         bg.setAlpha(0.01);
-        
+
         btnContainer.add([graphics, label, bg]);
 
         bg.on('pointerdown', () => {
-             audioManager.playUiSound();
+            audioManager.playUiSound();
             this.tweens.add({
                 targets: btnContainer,
                 scaleX: 0.9, scaleY: 0.9, duration: 100, yoyo: true,
@@ -101,13 +101,13 @@ export class MenuScene extends Phaser.Scene {
         });
 
         bg.on('pointerover', () => {
-             graphics.clear();
-             graphics.fillStyle(0xffffff, 1);
-             graphics.lineStyle(4, color, 1);
-             graphics.fillRoundedRect(-150, -40, 300, 80, 15);
-             graphics.strokeRoundedRect(-150, -40, 300, 80, 15);
-             label.setColor(color === 0xffffff ? '#000000' : '#000000');
-             btnContainer.setAlpha(0.9);
+            graphics.clear();
+            graphics.fillStyle(0xffffff, 1);
+            graphics.lineStyle(4, color, 1);
+            graphics.fillRoundedRect(-150, -40, 300, 80, 15);
+            graphics.strokeRoundedRect(-150, -40, 300, 80, 15);
+            label.setColor(color === 0xffffff ? '#000000' : '#000000');
+            btnContainer.setAlpha(0.9);
         });
 
         bg.on('pointerout', () => {

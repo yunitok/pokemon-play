@@ -32,17 +32,18 @@ export class SnorlaxScene extends Phaser.Scene {
         this.add.rectangle(0, 0, W, H, 0x000000, 0.7).setOrigin(0, 0);
 
         // Header: Standardized
-        UIHelper.createHeader(this, {
+        const headerUI = UIHelper.createHeader(this, {
             title: 'El Misterio de Snorlax',
             helpText: "¡Dale de comer a Snorlax!\n\nSnorlax quiere un número total de comidas.\nYa comió algunas. ¿Cuántas le faltan para llenarse?\n\nEJEMPLO:\nQuiere: 5 manzanas.\nYa comió: 2.\nLe faltan: 3 (porque 2 + 3 = 5)."
         });
+        this.headerLevelText = headerUI.levelText;
 
         // Snorlax (Center) - Random Image
         const snorlaxKeys = ['snorlax', 'snorlax_2', 'snorlax_3', 'snorlax_4'];
         this.snorlax = this.add.image(W / 2, 280, Phaser.Utils.Array.GetRandom(snorlaxKeys)).setDisplaySize(200, 200);
 
         // Wake Up Meter (Timer) - Improved visibility
-        this.add.text(W / 2, 80, '¡Que no despierte!', { 
+        this.add.text(W / 2, 80, '¡Que no despierte!', {
             fontSize: '24px', fontFamily: '"Fredoka One", cursive', color: '#FF0000', stroke: '#fff', strokeThickness: 4
         }).setOrigin(0.5);
         this.timerBox = this.add.rectangle(W / 2, 115, 300, 24, 0x000000, 0.5).setStrokeStyle(2, 0xffffff);
@@ -63,7 +64,7 @@ export class SnorlaxScene extends Phaser.Scene {
 
         // Answer Area - Moved DOWN
         this.answerContainer = this.add.container(0, 580);
-        
+
         // Power-up UI (Bottom Left/Right)
         this.createPowerupUI();
 
@@ -101,15 +102,15 @@ export class SnorlaxScene extends Phaser.Scene {
         const bg = this.add.circle(0, 0, 45, 0xffffff).setStrokeStyle(3, 0x000)
             .setInteractive({ useHandCursor: true });
         const img = this.add.image(0, 0, imgKey).setDisplaySize(55, 55).setTint(tint);
-        
+
         const count = gameManager.inventory[invKey] || 0;
-        const countText = this.add.text(25, 25, `${count}`, { 
+        const countText = this.add.text(25, 25, `${count}`, {
             fontSize: '20px', fontFamily: '"Fredoka One", cursive', backgroundColor: '#000', color: '#fff', padding: { x: 4, y: 2 }
         }).setOrigin(0.5);
-        
+
         btn.add([bg, img, countText]);
         btn.countText = countText; // Reference
-        
+
         bg.on('pointerdown', callback);
 
         // Store reference to update count later
@@ -128,11 +129,11 @@ export class SnorlaxScene extends Phaser.Scene {
 
         // Timer Logic using Difficulty utility
         const wakeUpSpeed = Difficulty.getSnorlaxWakeSpeed(gameManager.level);
-        
+
         // Only active if Level > 3 AND NOT FROZEN
         if (gameManager.level > 3 && !this.isTimeFrozen) {
             this.wakeProgress += wakeUpSpeed * (delta / 1000);
-            
+
             // Visual Warning
             if (this.wakeProgress > 0.8) {
                 this.timerBar.setFillStyle(0xFF0000); // Red
@@ -153,7 +154,7 @@ export class SnorlaxScene extends Phaser.Scene {
     askQuestion() {
         this.answerContainer.removeAll(true);
         this.feedbackText.setText('');
-        
+
         // Difficulty Logic from Utility
         const maxTarget = Difficulty.getSnorlaxTarget(gameManager.level);
 
@@ -170,8 +171,8 @@ export class SnorlaxScene extends Phaser.Scene {
         ];
         const currentFood = Phaser.Utils.Array.GetRandom(foods);
 
-        this.instructionText.setText(`Nivel ${gameManager.level}\nSnorlax quiere ${target} ${currentFood.name}.\nYa se comió ${current}.\n¿Cuántos faltan?`);
-        
+        this.instructionText.setText(`Snorlax quiere ${target} ${currentFood.name}.\nYa se comió ${current}.\n¿Cuántos faltan?`);
+
         this.createNumberOptions(this.correctAnswer, maxTarget);
     }
 
@@ -184,7 +185,7 @@ export class SnorlaxScene extends Phaser.Scene {
         choices = Phaser.Utils.Array.Shuffle(choices);
 
         const startX = this.scale.width / 2 - 150;
-        
+
         // Store buttons to manipulate later (e.g. Lupa)
         this.answerButtons = [];
 
@@ -198,9 +199,9 @@ export class SnorlaxScene extends Phaser.Scene {
             btn.add([bg, text]);
             btn.numberValue = num; // Attach value
             btn.bgCircle = bg; // Reference for effects
-            
+
             bg.on('pointerdown', () => this.checkAnswer(num));
-            
+
             // Hover effects
             bg.on('pointerover', () => bg.setFillStyle(0xFFCB05));
             bg.on('pointerout', () => bg.setFillStyle(0xffffff));
@@ -225,33 +226,25 @@ export class SnorlaxScene extends Phaser.Scene {
 
         // Reward logic (Centralized)
         gameManager.addCoins(10);
-        gameManager.levelUp();
+        gameManager.levelUp(); // Advance Level
 
         // Update UI
-        this.levelText.setText(`Nivel: ${gameManager.level}`);
-        this.feedbackText.setText('¡Excelente! +10 Monedas'); // Fixed Text
-        this.feedbackText.setColor('#00ff00');
-        
-        // Reset Timer completely (Reward)
+        if (this.headerLevelText) this.headerLevelText.setText(`Lvl ${gameManager.level}`);
+
+        // Reset Timer
         this.wakeProgress = 0;
         this.timerBar.width = 0;
-
-        // Reset Freeze
         this.isTimeFrozen = false;
-        this.timerBar.setFillStyle(0xFFA500); // Reset color if frozen blue
-
-        // Reset Shield logic? Optional. Maybe shield lasts until used/fails? 
-        // Let's keep shield if unused.
+        this.timerBar.setFillStyle(0xFFA500);
 
         // Animation
         this.tweens.add({ targets: this.snorlax, y: this.snorlax.y - 30, duration: 150, yoyo: true });
 
-        // Next level
-        this.time.delayedCall(1500, () => {
-             // Change Snorlax Skin for variety
+        // Unified Feedback
+        UIHelper.showFeedbackMessage(this, '¡Excelente! +10 Monedas', 'success', () => {
+            // Change Snorlax Skin for variety
             const snorlaxKeys = ['snorlax', 'snorlax_2', 'snorlax_3', 'snorlax_4'];
             this.snorlax.setTexture(Phaser.Utils.Array.GetRandom(snorlaxKeys));
-            
             this.askQuestion();
         });
     }
@@ -265,42 +258,49 @@ export class SnorlaxScene extends Phaser.Scene {
                 this.activeShieldVisual.destroy();
                 this.activeShieldVisual = null;
             }
-            
+
             audioManager.playTone(400, 'triangle', 0.3); // New Audio Manager usage for custom tones if needed or standard
+            // We can use a smaller inline feedback for shield, or the overlay?
+            // Shield is a "save", not a full fail. Let's keep inline or use a quick overlay?
+            // Let's use the overlay for consistency but maybe fast?
+            // Actually, keep inline for Shield to not interrupt flow too much?
+            // The user asked for "acertamos y/o fallamos". Shield is a neutral state.
+            // Let's keep the existing logic for Shield but use the helper if we fail for real.
+
             this.feedbackText.setText('¡El Escudo te protegió!');
             this.feedbackText.setColor('#00FF00'); // Green
-            
             this.cameras.main.flash(200, 0, 255, 0); // Green flash
             return; // Exit without penalty
         }
 
+        // True Fail
         audioManager.playLoseSound();
-        this.feedbackText.setText('¡Ups! Snorlax se mueve...');
-        this.feedbackText.setColor('#ff0000');
         this.cameras.main.shake(200, 0.01);
-        
-        // Penalty: Timer increases significantly
+
+        // Penalty
         this.wakeProgress += 0.3;
         this.timerBar.width = Math.min(296, 296 * this.wakeProgress);
+
+        UIHelper.showFeedbackMessage(this, '¡Ups! Snorlax se mueve...', 'error');
     }
 
     usePotion() {
         // Use Manager Action
         if (gameManager.useItem('potion')) {
             this.updatePowerupCount('potion');
-            
+
             // Effect: Reduce wake progress significantly
             this.wakeProgress = Math.max(0, this.wakeProgress - 0.5);
             this.timerBar.width = Math.min(296, 296 * this.wakeProgress); // Fix width update
-            
+
             audioManager.playTone(1000, 'sine', 0.5);
             this.feedbackText.setText('¡Usaste Poción! 💤');
             this.feedbackText.setColor('#4CAF50');
         } else {
-             audioManager.playTone(200, 'square', 0.1);
+            audioManager.playTone(200, 'square', 0.1);
         }
     }
-    
+
     useParalyzer() {
         if (this.isTimeFrozen) return; // Already active
 
@@ -321,15 +321,15 @@ export class SnorlaxScene extends Phaser.Scene {
             });
         }
     }
-    
+
     useShield() {
-         if (this.hasShield) return; // Already active
+        if (this.hasShield) return; // Already active
 
         if (gameManager.useItem('escudo')) {
             this.updatePowerupCount('escudo');
 
             this.hasShield = true;
-            
+
             audioManager.playTone(600, 'sine', 0.3);
             this.feedbackText.setText('¡Escudo Activado! 🛡️');
             this.feedbackText.setColor('#00FF00');
@@ -339,7 +339,7 @@ export class SnorlaxScene extends Phaser.Scene {
                 .setTint(0x00FF00)
                 .setDisplaySize(40, 40)
                 .setAlpha(0.8);
-                
+
             this.tweens.add({
                 targets: this.activeShieldVisual,
                 y: 290,
@@ -359,7 +359,7 @@ export class SnorlaxScene extends Phaser.Scene {
             this.updatePowerupCount('lupa');
 
             audioManager.playTone(1500, 'sine', 0.3);
-            
+
             // Highlight effect
             this.tweens.add({
                 targets: correctBtn.bgCircle,
@@ -386,7 +386,7 @@ export class SnorlaxScene extends Phaser.Scene {
         this.feedbackText.setText('¡Snorlax DESPERTÓ!');
         this.feedbackText.setColor('#ff0000'); // RED TEXT
         audioManager.playLoseSound();
-        
+
         // Reset Level penalty
         gameManager.levelDown(); // Safer decrement
 
@@ -402,16 +402,16 @@ export class SnorlaxScene extends Phaser.Scene {
 
     showHelp(text) {
         const container = this.add.container(0, 0).setDepth(2000).setScrollFactor(0);
-        
+
         // Background overlay
-        const bg = this.add.rectangle(this.cameras.main.width/2, this.cameras.main.height/2, this.cameras.main.width, this.cameras.main.height, 0x000000, 0.8)
+        const bg = this.add.rectangle(this.cameras.main.width / 2, this.cameras.main.height / 2, this.cameras.main.width, this.cameras.main.height, 0x000000, 0.8)
             .setInteractive(); // Block clicks below
-            
+
         // 1. Setup Content Width
         const boxW = 650;
         const padding = 30;
         const internalWidth = boxW - (padding * 2);
-        
+
         // 2. Create Text Objects FIRST to measure
         // Title
         const title = this.add.text(0, 0, 'AYUDA', {
@@ -441,29 +441,29 @@ export class SnorlaxScene extends Phaser.Scene {
         // 3. Calculate Heights & Positions
         const gapTitle = 20;
         const gapBtn = 30;
-        
+
         // Total Height Calculation
         const totalContentHeight = title.height + gapTitle + content.height + gapBtn + closeBtn.height;
         const boxH = totalContentHeight + (padding * 2);
-        
+
         // Center Position
         const centerX = this.cameras.main.width / 2;
         const centerY = this.cameras.main.height / 2;
-        
+
         // 4. Draw Box
         const box = this.add.rectangle(centerX, centerY, boxW, boxH, 0x333333).setStrokeStyle(4, 0xffffff);
-        
+
         // 5. Position Elements relative to CenterY
         // Start Y (Top of content)
         const startY = centerY - (totalContentHeight / 2);
-        
-        title.setPosition(centerX, startY + title.height/2);
-        content.setPosition(centerX, title.y + title.height/2 + gapTitle + content.height/2);
-        closeBtn.setPosition(centerX, content.y + content.height/2 + gapBtn + closeBtn.height/2);
+
+        title.setPosition(centerX, startY + title.height / 2);
+        content.setPosition(centerX, title.y + title.height / 2 + gapTitle + content.height / 2);
+        closeBtn.setPosition(centerX, content.y + content.height / 2 + gapBtn + closeBtn.height / 2);
 
         // Close Interaction
         closeBtn.on('pointerdown', () => {
-             audioManager.playUiSound();
+            audioManager.playUiSound();
             this.tweens.add({
                 targets: container,
                 scaleX: 0, scaleY: 0,
@@ -471,10 +471,10 @@ export class SnorlaxScene extends Phaser.Scene {
                 onComplete: () => container.destroy()
             });
         });
-        
+
         // Add to Container
         container.add([bg, box, title, content, closeBtn]);
-        
+
         // Animation
         container.setScale(0);
         this.tweens.add({
