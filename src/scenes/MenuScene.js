@@ -65,6 +65,11 @@ export class MenuScene extends Phaser.Scene {
         this.createButton(width / 2 + 170, startY + gapY, 'D: Poké-Mart', 0xE65100, () => {
             fadeOutAndSwitch(this, 'ChanseyMarketScene');
         });
+
+        // Row 3
+        this.createButton(width / 2 - 170, startY + gapY * 2, 'E: Contar Pikachus', 0xFFD700, () => {
+            fadeOutAndSwitch(this, 'PikachuCountScene');
+        });
     }
 
     createButton(x, y, text, color, callback) {

@@ -8,6 +8,7 @@ import { SilhouetteScannerScene } from './scenes/SilhouetteScannerScene';
 import { DiglettCounterScene } from './scenes/DiglettCounterScene';
 import { MeowthChangeScene } from './scenes/MeowthChangeScene';
 import { ChanseyMarketScene } from './scenes/ChanseyMarketScene';
+import { PikachuCountScene } from './scenes/PikachuCountScene';
 
 // Managers
 import { gameManager } from './managers/GameManager';
@@ -48,7 +49,7 @@ const config = {
     },
     // High DPI Support
     resolution: window.devicePixelRatio,
-    scene: [BootScene, MenuScene, SnorlaxScene, ShopScene, SilhouetteScannerScene, DiglettCounterScene, MeowthChangeScene, ChanseyMarketScene]
+    scene: [BootScene, MenuScene, SnorlaxScene, ShopScene, SilhouetteScannerScene, DiglettCounterScene, MeowthChangeScene, ChanseyMarketScene, PikachuCountScene]
 };
 
 const game = new Phaser.Game(config);
